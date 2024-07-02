@@ -1,16 +1,26 @@
-'use client';
+"use client";
 
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useRef } from "react";
 
-export default function HandlePopup() {
+const HandlePopup = () => {
   const ranOnce = useRef(false);
+  const searchParams = useSearchParams();
+
+  const tag = searchParams.get("tag");
+
   useEffect(() => {
     if (!ranOnce.current) {
       ranOnce.current = true;
-      const count = parseInt(localStorage.getItem("count") || "0");
-      localStorage.setItem("count", String(count + 1));
+
+      if (tag !== null) {
+        localStorage.setItem(`seen-${tag}`, "true");
+      }
+
       window.close();
     }
   }, []);
   return <></>;
-}
+};
+
+export default HandlePopup;
