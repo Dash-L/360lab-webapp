@@ -1,12 +1,10 @@
-# Create T3 App
+# 360Lab WebApp
+
+## Tech Stack
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
 
-## What's next? How do I make an app with this?
-
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+The following technologies are used:
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
@@ -15,15 +13,23 @@ If you are not familiar with the different technologies used in this project, pl
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
 
-## Learn More
+## Development
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+* Ensure `pnpm` and `nodejs` are installed
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+* Clone and `cd` to this repo:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+```sh
+$ git clone https://github.com/dash-l/360lab-webapp && cd 360lab-webapp
+```
 
-## How do I deploy this?
+* Copy `.env.example` to `.env` and set the required variables (note that the `MATTERPORT_API_*` variables are not required at the moment)
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+* For the links in the Matterport model to work in development, the domain `example.com` needs to point to `localhost` (`127.0.0.1`). The easiest way of doing this, at least on linux,
+is to add `127.0.0.1 example.com` as an entry to `/etc/hosts`. Windows has a `hosts` file as well, which may work the same way.
+
+* run `pnpm install`
+
+* run `pnpm dev`
+
+* Go to `localhost:3000` in a browser
