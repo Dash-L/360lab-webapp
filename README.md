@@ -2,9 +2,7 @@
 
 ## Demo
 
-https://github.com/Dash-L/360lab-webapp/assets/48158656/2dbe73e5-e8e3-4b5d-b7ed-bfd15cf9fb55
-
-
+https://github.com/Dash-L/360lab-webapp/assets/48158656/70a638c9-7477-4aa9-8d15-693376ca495e
 
 ## Tech Stack
 
