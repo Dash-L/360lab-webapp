@@ -6,5 +6,6 @@ with pkgs; stdenv.mkDerivation {
     pnpm
     nodejs
     nodePackages.typescript-language-server
+    nodePackages.prettier
   ];
 }
