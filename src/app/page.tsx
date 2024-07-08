@@ -14,7 +14,7 @@ const Home = () => {
         allowFullScreen
         src={`https://my.matterport.com/show/?m=${process.env.NEXT_PUBLIC_MATTERPORT_MODEL_ID}&brand=0&qs=1`}
       ></iframe>
-      <TagChecklist tags={["Sink", "Emergency Eyewash"]} />
+      <TagChecklist />
     </main>
   );
 };

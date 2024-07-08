@@ -22,6 +22,9 @@ export const env = createEnv({
       // VERCEL_URL doesn't include `https` so it cant be validated as a URL
       process.env.VERCEL ? z.string() : z.string().url()
     ),
+    MATTERPORT_API_TOKEN: z.string(),
+    MATTERPORT_API_SECRET: z.string(),
+    MATTERPORT_SDK_KEY: z.string(),
   },
 
   /**
@@ -43,6 +46,10 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    MATTERPORT_API_TOKEN: process.env.MATTERPORT_API_TOKEN,
+    MATTERPORT_API_SECRET: process.env.MATTERPORT_API_SECRET,
+    MATTERPORT_SDK_KEY: process.env.MATTERPORT_SDK_KEY,
+    
     NEXT_PUBLIC_MATTERPORT_MODEL_ID: process.env.NEXT_PUBLIC_MATTERPORT_MODEL_ID,
   },
   /**
