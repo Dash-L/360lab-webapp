@@ -24,7 +24,6 @@ export const env = createEnv({
     ),
     MATTERPORT_API_TOKEN: z.string(),
     MATTERPORT_API_SECRET: z.string(),
-    MATTERPORT_SDK_KEY: z.string(),
   },
 
   /**
@@ -35,6 +34,7 @@ export const env = createEnv({
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
     NEXT_PUBLIC_MATTERPORT_MODEL_ID: z.string(),
+    NEXT_PUBLIC_MATTERPORT_SDK_KEY: z.string(),
   },
 
   /**
@@ -48,7 +48,7 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     MATTERPORT_API_TOKEN: process.env.MATTERPORT_API_TOKEN,
     MATTERPORT_API_SECRET: process.env.MATTERPORT_API_SECRET,
-    MATTERPORT_SDK_KEY: process.env.MATTERPORT_SDK_KEY,
+    NEXT_PUBLIC_MATTERPORT_SDK_KEY: process.env.NEXT_PUBLIC_MATTERPORT_SDK_KEY,
     
     NEXT_PUBLIC_MATTERPORT_MODEL_ID: process.env.NEXT_PUBLIC_MATTERPORT_MODEL_ID,
   },

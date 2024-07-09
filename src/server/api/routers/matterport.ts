@@ -28,6 +28,7 @@ export const matterportRouter = createTRPCRouter({
           query: `{
             model(id: "${input.modelId}") {
               mattertags {
+                id
                 label
               }
             }

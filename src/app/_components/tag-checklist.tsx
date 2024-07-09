@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { MpSdk } from "@matterport/sdk";
+import { useContext, useEffect, useState } from "react";
 import { env } from "~/env";
+import { MpSdkContext } from "~/mp_sdk_context";
 import { api } from "~/trpc/react";
 
 export const TagChecklist = () => {
@@ -9,29 +11,58 @@ export const TagChecklist = () => {
     modelId: env.NEXT_PUBLIC_MATTERPORT_MODEL_ID,
   });
 
-  const tags = () => {
-    if (tagQuery.isFetched)
-      return tagQuery.data.model.mattertags.map(
-        (tag: { label: string }) => tag.label,
+  const [tags, setTags] = useState<{ [id: string]: string }>({});
+
+  useEffect(() => {
+    if (tagQuery.isFetched) {
+      setTags(
+        Object.fromEntries(
+          tagQuery.data.model.mattertags.map(
+            (tag: { id: string; label: string }) => [tag.id, tag.label],
+          ),
+        ),
       );
-    return [];
-  };
+    }
+  }, [tagQuery.isFetched]);
 
   const getChecked = () => {
-    let checked: { [tag: string]: boolean } = {};
-    tags().forEach((tag: string) => {
-      checked[tag] =
-        (localStorage.getItem(`seen-${tag}`) || "false") === "true";
-    });
-    return checked;
+    return Object.fromEntries(
+      Object.entries(tags).map(([_, label]) => [
+        label,
+        (localStorage.getItem(`seen-${label}`) || "false") === "true",
+      ]),
+    );
   };
 
   // getChecked will return an empty dictionary on first load, the function call is basically just for type inference
   const [checked, setChecked] = useState(getChecked);
 
+  const mpSdk = useContext(MpSdkContext);
+
   useEffect(() => {
+    if (mpSdk) {
+      const subscription = mpSdk.Tag.openTags.subscribe(
+        (openTags: MpSdk.Tag.OpenTags) => {
+          console.info("[360lab] got OpenTags event from mpSdk:", openTags);
+          const selectedId = openTags.selected.keys().next().value;
+          if (selectedId !== null) {
+            const label = tags[selectedId];
+            localStorage.setItem(`seen-${label}`, "true");
+            setChecked(getChecked);
+          }
+        },
+      );
+
+      return subscription.cancel;
+    }
+  }, [mpSdk]);
+
+  useEffect(() => {
+    if (Object.entries(tags).length !== 0) {
+      console.info("[360lab] fetched tags:", tags);
+    }
     setChecked(getChecked);
-  }, [tagQuery.isFetched]);
+  }, [tags]);
 
   useEffect(() => {
     const storageListener = (_ev: StorageEvent) => {
@@ -44,8 +75,8 @@ export const TagChecklist = () => {
   }, []);
 
   const uncheckAll = () => {
-    tags().forEach((tag: string) => {
-      localStorage.setItem(`seen-${tag}`, "false");
+    Object.entries(tags).forEach(([_, label]) => {
+      localStorage.setItem(`seen-${label}`, "false");
     });
     setChecked(getChecked);
   };
@@ -60,16 +91,16 @@ export const TagChecklist = () => {
 
   return (
     <div className="flex flex-col">
-      {tags().map((tag: string, idx: number) => (
+      {Object.entries(tags).map(([_, label], idx: number) => (
         <div key={idx}>
           {/* defaulting checked[tag] to false isn't really necessary, it just gets rid of an error where react thinks this input has changed from unmanaged to managed */}
           <input
             type="checkbox"
             readOnly
-            checked={checked[tag] ?? false}
-            value={tag}
+            checked={checked[label] ?? false}
+            value={label}
           />
-          <span>{tag}</span>
+          <span>{label}</span>
         </div>
       ))}
       <button onClick={uncheckAll}>Clear</button>

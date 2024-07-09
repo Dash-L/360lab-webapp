@@ -11,6 +11,9 @@ importers:
       '@auth/drizzle-adapter':
         specifier: ^1.1.0
         version: 1.4.1
+      '@matterport/sdk':
+        specifier: ^1.4.24
+        version: 1.4.24
       '@t3-oss/env-nextjs':
         specifier: ^0.10.1
         version: 0.10.1(typescript@5.5.2)(zod@3.23.8)
@@ -458,6 +461,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@matterport/sdk@1.4.24':
+    resolution: {integrity: sha512-w+K8pxZC0hSRfapF8jHLxDl75y8TPgtjICk0DPc1l2RbaDU8+kheRCFpgSdEYOd3HO4WD5uNsUG65qljqgDDeg==}
 
   '@next/env@14.2.4':
     resolution: {integrity: sha512-3EtkY5VDkuV2+lNmKlbkibIJxcO4oIHEhBWne6PaAp+76J9KoSsGvNikp6ivzAT8dhhBMYrm6op2pS1ApG0Hzg==}
@@ -2594,6 +2600,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
+
+  '@matterport/sdk@1.4.24': {}
 
   '@next/env@14.2.4': {}
 
