@@ -5,6 +5,7 @@ with pkgs; stdenv.mkDerivation {
   nativeBuildInputs = [
     pnpm
     nodejs
+    openssl
     nodePackages.typescript-language-server
     nodePackages.prettier
   ];

@@ -1,9 +1,11 @@
 "use client";
 
 import { MpSdk } from "@matterport/sdk";
+import { inferRouterOutputs } from "@trpc/server";
 import { useContext, useEffect, useState } from "react";
 import { env } from "~/env";
 import { MpSdkContext } from "~/mp_sdk_context";
+import { AppRouter } from "~/server/api/root";
 import { api } from "~/trpc/react";
 
 export const TagChecklist = () => {
@@ -11,33 +13,26 @@ export const TagChecklist = () => {
     modelId: env.NEXT_PUBLIC_MATTERPORT_MODEL_ID,
   });
 
-  const [tags, setTags] = useState<{ [id: string]: string }>({});
+  const utils = api.useUtils();
+
+  const visitTag = api.matterport.viewTag.useMutation({
+    onSuccess: () => utils.matterport.tags.invalidate(),
+  });
+  const unvisitTag = api.matterport.deleteViews.useMutation();
+
+  const [tags, setTags] = useState<
+    inferRouterOutputs<AppRouter>["matterport"]["tags"]
+  >({});
 
   useEffect(() => {
-    if (tagQuery.isFetched) {
-      setTags(
-        Object.fromEntries(
-          tagQuery.data.model.mattertags.map(
-            (tag: { id: string; label: string }) => [tag.id, tag.label],
-          ),
-        ),
-      );
+    if (tagQuery.data) {
+      setTags(tagQuery.data);
     }
-  }, [tagQuery.isFetched]);
-
-  const getChecked = () => {
-    return Object.fromEntries(
-      Object.entries(tags).map(([_, label]) => [
-        label,
-        (localStorage.getItem(`seen-${label}`) || "false") === "true",
-      ]),
-    );
-  };
-
-  // getChecked will return an empty dictionary on first load, the function call is basically just for type inference
-  const [checked, setChecked] = useState(getChecked);
+  }, [tagQuery.data]);
 
   const mpSdk = useContext(MpSdkContext);
+
+  const [selected, setSelected] = useState("");
 
   useEffect(() => {
     if (mpSdk) {
@@ -45,40 +40,32 @@ export const TagChecklist = () => {
         (openTags: MpSdk.Tag.OpenTags) => {
           console.info("[360lab] got OpenTags event from mpSdk:", openTags);
           const selectedId = openTags.selected.keys().next().value;
-          if (selectedId !== null) {
-            const label = tags[selectedId];
-            localStorage.setItem(`seen-${label}`, "true");
-            setChecked(getChecked);
+          if (selected !== selectedId) {
+            console.info(`\tID: ${selectedId}`);
+            setSelected(selectedId ?? "");
+            
+            if (selectedId !== undefined) {
+              const tagData = tags[selectedId];
+              console.log(`\tData: ${JSON.stringify(tagData)}`);
+
+              if (tagData !== undefined) {
+                console.info(`\tMarking ${tagData.label} as seen`);
+                visitTag.mutate({ tagId: selectedId });
+              }
+            }
           }
         },
       );
 
       return subscription.cancel;
     }
-  }, [mpSdk]);
-
-  useEffect(() => {
-    if (Object.entries(tags).length !== 0) {
-      console.info("[360lab] fetched tags:", tags);
-    }
-    setChecked(getChecked);
-  }, [tags]);
-
-  useEffect(() => {
-    const storageListener = (_ev: StorageEvent) => {
-      setChecked(getChecked);
-    };
-
-    window.addEventListener("storage", storageListener);
-
-    return () => window.removeEventListener("storage", storageListener);
-  }, []);
+  }, [mpSdk, tags, selected]);
 
   const uncheckAll = () => {
-    Object.entries(tags).forEach(([_, label]) => {
-      localStorage.setItem(`seen-${label}`, "false");
+    Object.keys(tags).forEach((id) => {
+      unvisitTag.mutate({ tagId: id });
     });
-    setChecked(getChecked);
+    utils.matterport.tags.invalidate();
   };
 
   if (tagQuery.isPending) {
@@ -91,15 +78,9 @@ export const TagChecklist = () => {
 
   return (
     <div className="flex flex-col">
-      {Object.entries(tags).map(([_, label], idx: number) => (
+      {Object.entries(tags).map(([id, { label, seen }], idx: number) => (
         <div key={idx}>
-          {/* defaulting checked[tag] to false isn't really necessary, it just gets rid of an error where react thinks this input has changed from unmanaged to managed */}
-          <input
-            type="checkbox"
-            readOnly
-            checked={checked[label] ?? false}
-            value={label}
-          />
+          <input type="checkbox" readOnly checked={seen} value={id} />
           <span>{label}</span>
         </div>
       ))}

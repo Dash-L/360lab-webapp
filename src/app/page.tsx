@@ -1,37 +1,22 @@
-"use client";
+import { getServerAuthSession } from "~/server/auth";
+import Link from "next/link";
+import { HomePage } from "./_components/home";
 
-import { useRef, useState } from "react";
-import { env } from "~/env";
-import dynamic from "next/dynamic";
+const Home = async () => {
+  const session = await getServerAuthSession();
 
-const TagChecklist = dynamic(
-  () => import("./_components/tag-checklist").then((mod) => mod.TagChecklist),
-  { ssr: false },
-);
-
-const MpSdkProvider = dynamic(
-  () => import("./_components/mpsdk-provider").then((mod) => mod.MpSdkProvider),
-  { ssr: false },
-);
-
-const Home = () => {
-  const [iframeElement, setIframeElement] = useState<HTMLIFrameElement | null>(null);
+  if (session === null) {
+    return <Link href="api/auth/signin">Sign In</Link>;
+  }
 
   return (
-    <MpSdkProvider iframeElement={iframeElement}>
-      <main className="flex flex-row">
-        {/* NOTE: For accessibility, `outline-none` is bad, since outlines are usually used to display focus */}
-        <iframe
-          ref={(el) => setIframeElement(el)}
-          className="border-0 outline-none"
-          width="853"
-          height="480"
-          allowFullScreen
-          src={`https://my.matterport.com/show/?m=${env.NEXT_PUBLIC_MATTERPORT_MODEL_ID}&brand=0&qs=1`}
-        ></iframe>
-        <TagChecklist />
-      </main>
-    </MpSdkProvider>
+    <main className="flex flex-row">
+      <HomePage />
+      <div className="flex-row space-x-4 ml-auto mr-10">
+        <span>Logged in as {session.user.name}</span>
+        <Link href="api/auth/signout">Sign Out</Link>
+      </div>
+    </main>
   );
 };
 

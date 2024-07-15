@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  foreignKey,
   index,
   integer,
   pgTableCreator,
@@ -19,24 +20,87 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator((name) => `360lab-webapp_${name}`);
 
-export const posts = createTable(
-  "post",
+// export const posts = createTable(
+//   "post",
+//   {
+//     id: serial("id").primaryKey(),
+//     name: varchar("name", { length: 256 }),
+//     createdById: varchar("createdById", { length: 255 })
+//       .notNull()
+//       .references(() => users.id),
+//     createdAt: timestamp("created_at", { withTimezone: true })
+//       .default(sql`CURRENT_TIMESTAMP`)
+//       .notNull(),
+//     updatedAt: timestamp("updatedAt", { withTimezone: true }),
+//   },
+//   (example) => ({
+//     createdByIdIdx: index("createdById_idx").on(example.createdById),
+//     nameIndex: index("name_idx").on(example.name),
+//   })
+// );
+
+export const tags = createTable("tag", {
+  id: varchar("id", { length: 255 }).notNull().primaryKey(),
+  label: varchar("label", { length: 255 }).notNull(),
+});
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  usersToTags: many(usersToTags),
+}));
+
+export const visits = createTable(
+  "visits",
   {
     id: serial("id").primaryKey(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("createdById", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    userId: varchar("userId", { length: 255 }).notNull(),
+    tagId: varchar("tagId", { length: 255 }).notNull(),
+    timestamp: timestamp("timestamp", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updatedAt", { withTimezone: true }),
   },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  })
+  (t) => ({
+    fk: foreignKey({
+      columns: [t.userId, t.tagId],
+      foreignColumns: [usersToTags.userId, usersToTags.tagId],
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+  }),
 );
+
+export const visitsRelations = relations(visits, ({ one }) => ({
+  usersToTags: one(usersToTags, {
+    fields: [visits.userId, visits.tagId],
+    references: [usersToTags.userId, usersToTags.tagId],
+  }),
+}));
+
+export const usersToTags = createTable(
+  "users_to_tags",
+  {
+    userId: varchar("userId", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    tagId: varchar("tagId", { length: 255 })
+      .notNull()
+      .references(() => tags.id),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.tagId] }),
+  }),
+);
+
+export const usersToTagsRelations = relations(usersToTags, ({ one, many }) => ({
+  user: one(users, {
+    fields: [usersToTags.userId],
+    references: [users.id],
+  }),
+  tag: one(tags, {
+    fields: [usersToTags.tagId],
+    references: [tags.id],
+  }),
+  visits: many(visits),
+}));
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
@@ -54,6 +118,7 @@ export const users = createTable("user", {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  usersToTags: many(usersToTags),
 }));
 
 export const accounts = createTable(
@@ -80,7 +145,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_userId_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -103,7 +168,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_userId_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -122,5 +187,5 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
