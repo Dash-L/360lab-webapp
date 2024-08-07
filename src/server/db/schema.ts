@@ -39,6 +39,38 @@ export const createTable = pgTableCreator((name) => `360lab-webapp_${name}`);
 //   })
 // );
 
+export const quizQuestions = createTable("quizQuestion", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  tagId: varchar("tagId", { length: 255 }).notNull(),
+  quizId: varchar("quizId", { length: 255 })
+    .notNull()
+    .references(() => quizzes.id, { onDelete: "cascade" }),
+  completedAt: timestamp("completedAt", { withTimezone: true }),
+});
+
+export const quizQuestionRelations = relations(quizQuestions, ({ one }) => ({
+  quiz: one(quizzes, {
+    fields: [quizQuestions.quizId],
+    references: [quizzes.id],
+  }),
+}));
+
+export const quizzes = createTable("quiz", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("userId", { length: 255 }).notNull(),
+});
+
+export const quizRelations = relations(quizzes, ({ one, many }) => ({
+  user: one(users, { fields: [quizzes.userId], references: [users.id] }),
+  quizQuestions: many(quizQuestions),
+}));
+
 export const tags = createTable("tag", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   label: varchar("label", { length: 255 }).notNull(),
@@ -51,7 +83,10 @@ export const tagsRelations = relations(tags, ({ many }) => ({
 export const visits = createTable(
   "visits",
   {
-    id: serial("id").primaryKey(),
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     userId: varchar("userId", { length: 255 }).notNull(),
     tagId: varchar("tagId", { length: 255 }).notNull(),
     timestamp: timestamp("timestamp", { withTimezone: true })
@@ -119,6 +154,7 @@ export const users = createTable("user", {
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   usersToTags: many(usersToTags),
+  quizzes: many(quizzes),
 }));
 
 export const accounts = createTable(

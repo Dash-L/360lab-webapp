@@ -57,7 +57,7 @@ export const TagChecklist = () => {
         },
       );
 
-      return subscription.cancel;
+      return () => subscription.cancel();
     }
   }, [mpSdk, tags, selected]);
 
