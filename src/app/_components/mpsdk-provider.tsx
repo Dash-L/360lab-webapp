@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MpSdk, setupSdk } from "@matterport/sdk";
+import { type MpSdk, setupSdk } from "@matterport/sdk";
 import { env } from "~/env";
 import { MpSdkContext } from "~/mp_sdk_context";
 
@@ -19,7 +19,11 @@ export const MpSdkProvider = (props: {
       setupSdk(env.NEXT_PUBLIC_MATTERPORT_SDK_KEY, {
         iframe: iframeElement,
         space: env.NEXT_PUBLIC_MATTERPORT_MODEL_ID,
-      }).then((sdk) => setMpSdk(sdk));
+      })
+        .then((sdk) => setMpSdk(sdk as MpSdk))
+        .catch((reason) =>
+          console.error(`Matterport SDK initialization failed: ${reason}`),
+        );
     }
     console.info("[360lab] Matterport SDK successfully loaded");
   }, [iframeElement]);

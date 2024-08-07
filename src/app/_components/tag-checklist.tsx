@@ -1,10 +1,10 @@
-import { MpSdk } from "@matterport/sdk";
-import { inferRouterOutputs } from "@trpc/server";
+import type { MpSdk } from "@matterport/sdk";
+import type { inferRouterOutputs } from "@trpc/server";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { env } from "~/env";
 import { MpSdkContext } from "~/mp_sdk_context";
-import { AppRouter } from "~/server/api/root";
+import type { AppRouter } from "~/server/api/root";
 import { api } from "~/trpc/react";
 import { ProgressCircle } from "./progress-circle";
 
@@ -39,7 +39,7 @@ export const TagChecklist = () => {
       const subscription = mpSdk.Tag.openTags.subscribe(
         (openTags: MpSdk.Tag.OpenTags) => {
           console.info("[360lab] got OpenTags event from mpSdk:", openTags);
-          const selectedId = openTags.selected.keys().next().value;
+          const selectedId = openTags.selected.keys().next().value as string;
           if (selected !== selectedId) {
             console.info(`\tID: ${selectedId}`);
             setSelected(selectedId ?? "");
@@ -59,13 +59,13 @@ export const TagChecklist = () => {
 
       return () => subscription.cancel();
     }
-  }, [mpSdk, tags, selected]);
+  }, [mpSdk, tags, selected, visitTag]);
 
-  const uncheckAll = () => {
+  const uncheckAll = async () => {
     Object.keys(tags).forEach((id) => {
       unvisitTag.mutate({ tagId: id });
     });
-    utils.matterport.tags.invalidate();
+    await utils.matterport.tags.invalidate();
   };
 
   const router = useRouter();

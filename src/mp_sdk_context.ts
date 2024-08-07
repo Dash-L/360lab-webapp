@@ -1,4 +1,4 @@
 import { createContext } from "react";
-import { MpSdk } from "@matterport/sdk";
+import type { MpSdk } from "@matterport/sdk";
 
 export const MpSdkContext = createContext<MpSdk | null>(null);
