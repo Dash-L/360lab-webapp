@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "~/env";
@@ -6,9 +5,8 @@ import { env } from "~/env";
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "~/server/api/trpc";
-import { tags, users, usersToTags, visits } from "~/server/db/schema";
+import { tags, usersToTags, visits } from "~/server/db/schema";
 
 const matterportAPIUrl = "https://api.matterport.com/api/models/graph";
 
@@ -21,10 +19,16 @@ const fetchOpts: RequestInit = {
   },
 };
 
+type Tag = {
+  id: string;
+  label: string;
+  anchorPosition: { x: number; y: number; z: number };
+};
+
 type MattertagQueryOutput = {
   data: {
     model: {
-      mattertags: { id: string; label: string }[];
+      mattertags: Tag[];
     };
   };
 };
@@ -42,6 +46,9 @@ export const matterportRouter = createTRPCRouter({
               mattertags {
                 id
                 label
+                anchorPosition {
+                  x y z
+                }
               }
             }
           }`,
@@ -52,7 +59,14 @@ export const matterportRouter = createTRPCRouter({
 
       await ctx.db
         .insert(tags)
-        .values(data.model.mattertags)
+        .values(
+          data.model.mattertags.map((tag: Tag) => ({
+            ...tag,
+            posX: tag.anchorPosition.x,
+            posY: tag.anchorPosition.y,
+            posZ: tag.anchorPosition.z,
+          })),
+        )
         .onConflictDoUpdate({
           target: tags.id,
           set: { label: excludedTagLabel },
@@ -62,7 +76,7 @@ export const matterportRouter = createTRPCRouter({
       await ctx.db
         .insert(usersToTags)
         .values(
-          data.model.mattertags.map((tag: { id: string; label: string }) => ({
+          data.model.mattertags.map((tag: Tag) => ({
             userId: ctx.session.user.id,
             tagId: tag.id,
           })),
@@ -85,19 +99,6 @@ export const matterportRouter = createTRPCRouter({
           },
         ]),
       ) as Record<string, { label: string; seen: boolean }>;
-
-      // const res = await ctx.db.query.users.findFirst({
-      //   where: eq(users.id, ctx.session.user.id),
-      //   columns: {},
-      //   with: {
-      //     usersToTags: {
-      //       columns: { tagId: true },
-      //       with: {
-      //         visits: true,
-      //       },
-      //     },
-      //   },
-      // });
     }),
 
   viewTag: protectedProcedure

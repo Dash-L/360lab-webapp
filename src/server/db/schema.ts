@@ -1,11 +1,11 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   foreignKey,
   index,
   integer,
   pgTableCreator,
   primaryKey,
-  serial,
+  real,
   text,
   timestamp,
   varchar,
@@ -44,10 +44,14 @@ export const quizQuestions = createTable("quizQuestion", {
     .notNull()
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tagId: varchar("tagId", { length: 255 }).notNull(),
+  tagName: varchar("tagName", { length: 255 }).notNull(),
   quizId: varchar("quizId", { length: 255 })
     .notNull()
     .references(() => quizzes.id, { onDelete: "cascade" }),
+  selectedX: real("selectedX"),
+  selectedY: real("selectedY"),
+  selectedZ: real("selectedZ"),
+  nearestTag: varchar("nearestTagId", { length: 255 }),
   completedAt: timestamp("completedAt", { withTimezone: true }),
 });
 
@@ -55,6 +59,10 @@ export const quizQuestionRelations = relations(quizQuestions, ({ one }) => ({
   quiz: one(quizzes, {
     fields: [quizQuestions.quizId],
     references: [quizzes.id],
+  }),
+  tag: one(tags, {
+    fields: [quizQuestions.nearestTag],
+    references: [tags.id],
   }),
 }));
 
@@ -64,6 +72,11 @@ export const quizzes = createTable("quiz", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   userId: varchar("userId", { length: 255 }).notNull(),
+  currentQuestion: varchar("currentQuestion", { length: 255 }),
+  startedAt: timestamp("startedAt", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  completedAt: timestamp("completedAt", { withTimezone: true }),
 });
 
 export const quizRelations = relations(quizzes, ({ one, many }) => ({
@@ -73,7 +86,10 @@ export const quizRelations = relations(quizzes, ({ one, many }) => ({
 
 export const tags = createTable("tag", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
-  label: varchar("label", { length: 255 }).notNull(),
+  label: text("label").notNull(),
+  posX: real("posX").notNull(),
+  posY: real("posY").notNull(),
+  posZ: real("posZ").notNull(),
 });
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -90,7 +106,7 @@ export const visits = createTable(
     userId: varchar("userId", { length: 255 }).notNull(),
     tagId: varchar("tagId", { length: 255 }).notNull(),
     timestamp: timestamp("timestamp", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
+      .defaultNow()
       .notNull(),
   },
   (t) => ({
@@ -147,7 +163,7 @@ export const users = createTable("user", {
   emailVerified: timestamp("emailVerified", {
     mode: "date",
     withTimezone: true,
-  }).default(sql`CURRENT_TIMESTAMP`),
+  }).defaultNow(),
   image: varchar("image", { length: 255 }),
 });
 

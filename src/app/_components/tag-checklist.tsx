@@ -20,6 +20,8 @@ export const TagChecklist = () => {
   });
   const unvisitTag = api.matterport.deleteViews.useMutation();
 
+  const startQuiz = api.quiz.startQuiz.useMutation();
+
   const [tags, setTags] = useState<
     inferRouterOutputs<AppRouter>["matterport"]["tags"]
   >({});
@@ -62,9 +64,9 @@ export const TagChecklist = () => {
   }, [mpSdk, tags, selected, visitTag]);
 
   const uncheckAll = async () => {
-    Object.keys(tags).forEach((id) => {
-      unvisitTag.mutate({ tagId: id });
-    });
+    for (const id of Object.keys(tags)) {
+      await unvisitTag.mutateAsync({ tagId: id });
+    }
     await utils.matterport.tags.invalidate();
   };
 
@@ -96,7 +98,14 @@ export const TagChecklist = () => {
           </>
         )}
         <button onClick={uncheckAll}>Clear</button>
-        <button onClick={() => router.push("/quiz")}>Done</button>
+        <button
+          onClick={() => {
+            startQuiz.mutate();
+            router.push("/quiz");
+          }}
+        >
+          Done
+        </button>
         <button
           className="text-red-300"
           onClick={() => router.push("/api/auth/signout")}

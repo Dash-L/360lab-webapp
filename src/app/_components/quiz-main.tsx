@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { env } from "~/env";
+import { Quiz } from "./quiz";
 
 const MpSdkProvider = dynamic(
   () => import("./mpsdk-provider").then((mod) => mod.MpSdkProvider),
@@ -16,10 +17,14 @@ export const QuizPage = () => {
 
   return (
     <MpSdkProvider iframeElement={iframeElement}>
-      <div className="flex flex-row">
+      <div>
+        <Quiz
+          iframeWidth={iframeElement?.clientWidth}
+          iframeHeight={iframeElement?.clientHeight}
+        />
         <iframe
           ref={(el) => setIframeElement(el)}
-          className="border-0 w-screen h-screen"
+          className="h-screen w-screen border-0"
           // width="853"
           // height="480"
           allowFullScreen
