@@ -48,9 +48,11 @@ export const quizQuestions = createTable("quizQuestion", {
   quizId: varchar("quizId", { length: 255 })
     .notNull()
     .references(() => quizzes.id, { onDelete: "cascade" }),
+  index: integer("index").notNull(),
   selectedX: real("selectedX"),
   selectedY: real("selectedY"),
   selectedZ: real("selectedZ"),
+  minDist: real("minDist"),
   nearestTag: varchar("nearestTagId", { length: 255 }),
   completedAt: timestamp("completedAt", { withTimezone: true }),
 });
@@ -81,7 +83,7 @@ export const quizzes = createTable("quiz", {
 
 export const quizRelations = relations(quizzes, ({ one, many }) => ({
   user: one(users, { fields: [quizzes.userId], references: [users.id] }),
-  quizQuestions: many(quizQuestions),
+  questions: many(quizQuestions),
 }));
 
 export const tags = createTable("tag", {

@@ -8,18 +8,23 @@ export const Quiz = (props: {
   iframeWidth: number | undefined;
   iframeHeight: number | undefined;
 }) => {
+  const utils = api.useUtils();
+
   const router = useRouter();
 
-  const utils = api.useUtils();
-  const {
-    data: currentQuestion,
-    isLoading,
-    isError,
-    error,
-  } = api.quiz.getQuiz.useQuery();
+  const [currentQuestion, _currentQuestionQuery] =
+    api.quiz.getQuiz.useSuspenseQuery();
+
+  const [scores, _scoresQuery] = api.quiz.getScores.useSuspenseQuery();
+
   const submitQuestion = api.quiz.submitQuestion.useMutation({
-    onSuccess: () => {
-      utils.quiz.getQuiz.invalidate();
+    onSuccess: async (done) => {
+      if (done) {
+        router.push("/");
+      }
+
+      await utils.quiz.getQuiz.invalidate();
+      await utils.quiz.getScores.invalidate();
     },
   });
 
@@ -87,24 +92,20 @@ export const Quiz = (props: {
     lastPose,
   ]);
 
-  if (isError) {
-    return <div>Error: {error.message}</div>;
-  }
-
-  if (currentQuestion === null) {
-    router.push("/");
-  }
-
   return (
     <div className="pointer-events-none absolute h-screen w-screen">
       <div className="absolute right-0 h-screen">
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : (
-          <div className="pointer-events-auto mr-8 flex w-40 flex-col bg-gray-600/60 py-1 text-slate-300">
-            Find: {currentQuestion!.tagName}
+        <div className="pointer-events-auto mr-8 flex w-40 flex-col bg-gray-600/60 py-1 text-slate-300">
+          <div className="space-around mx-auto flex flex-row">
+            {scores.map((score, i) => (
+              <div
+                key={i}
+                className={`rounded-full ${score === null ? "bg-white" : score ? "bg-green-500" : "bg-red-500"} mx-2 h-5 w-5`}
+              ></div>
+            ))}
           </div>
-        )}
+          <p>Find: {currentQuestion.question.tagName}</p>
+        </div>
       </div>
       <button
         className={`${buttonVisible ? "absolute block" : "hidden"} pointer-events-auto rounded bg-white px-1`}

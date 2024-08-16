@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { env } from "~/env";
 import { Quiz } from "./quiz";
 
@@ -18,10 +18,12 @@ export const QuizPage = () => {
   return (
     <MpSdkProvider iframeElement={iframeElement}>
       <div>
-        <Quiz
-          iframeWidth={iframeElement?.clientWidth}
-          iframeHeight={iframeElement?.clientHeight}
-        />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Quiz
+            iframeWidth={iframeElement?.clientWidth}
+            iframeHeight={iframeElement?.clientHeight}
+          />
+        </Suspense>
         <iframe
           ref={(el) => setIframeElement(el)}
           className="h-screen w-screen border-0"

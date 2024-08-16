@@ -82,7 +82,7 @@ export const TagChecklist = () => {
   return (
     <div className="absolute right-0 h-screen overflow-hidden hover:overflow-scroll">
       <div className="mr-8 flex w-40 flex-col bg-gray-600/60 py-1 text-slate-300">
-        {tagQuery.isPending ? (
+        {tagQuery.isLoading ? (
           <p>Loading...</p>
         ) : (
           <>
@@ -90,7 +90,7 @@ export const TagChecklist = () => {
               className="self-center"
               size={60}
               strokeWidth={5}
-              progress={seen / total}
+              progress={total !== 0 ? seen / total : 1}
             />
             <span className="self-center">
               Tags: {seen}/{total}

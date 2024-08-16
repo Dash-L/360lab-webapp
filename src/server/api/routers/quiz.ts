@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { quizQuestions, quizzes } from "~/server/db/schema";
+import { quizQuestions, quizzes, tags } from "~/server/db/schema";
 
 const validQuizTagLabels = [
   "Sink",
@@ -23,20 +23,26 @@ export const quizRouter = createTRPCRouter({
     )[0]!;
     // Create 3 random quiz questions
     // Pick one to set as current
-    let indices = new Set<number>();
-    while (indices.size < 3) {
-      indices.add(Math.floor(Math.random() * validQuizTagLabels.length));
+    const labelIndices = new Set<number>();
+    while (labelIndices.size < 3) {
+      labelIndices.add(Math.floor(Math.random() * validQuizTagLabels.length));
+    }
+    const indexIndices = new Set<number>();
+    while (indexIndices.size < 3) {
+      indexIndices.add(Math.floor(Math.random() * 3));
     }
 
     const questions = await ctx.db
       .insert(quizQuestions)
       .values(
-        Array.from(indices).map((i) => ({
+        Array.from(labelIndices).map((i, j) => ({
           quizId: newQuiz.id,
           tagName: validQuizTagLabels[i]!,
+          index: Array.from(indexIndices)[j]!,
         })),
       )
       .returning();
+    questions.sort((a, b) => a.index - b.index);
     const firstQuestion = questions[0]!;
     await ctx.db
       .update(quizzes)
@@ -50,22 +56,19 @@ export const quizRouter = createTRPCRouter({
         isNull(quizzes.completedAt),
       ),
       with: {
-        quizQuestions: {
+        questions: {
           columns: { id: true, tagName: true },
         },
       },
     });
 
     if (currentQuiz) {
-      const currentQuestion = currentQuiz.quizQuestions.find(
+      const currentQuestion = currentQuiz.questions.find(
         (question) => question.id === currentQuiz.currentQuestion,
       );
-      return currentQuestion!;
+      return { quizId: currentQuiz.id, question: currentQuestion! };
     } else {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "no unfinished quiz found",
-      });
+      throw new TRPCError({ code: "NOT_FOUND", message: "no active quiz" });
     }
   }),
   submitQuestion: protectedProcedure
@@ -82,8 +85,8 @@ export const quizRouter = createTRPCRouter({
           isNull(quizzes.completedAt),
         ),
         with: {
-          quizQuestions: {
-            columns: { id: true, tagName: true },
+          questions: {
+            columns: { id: true, tagName: true, index: true },
           },
         },
       });
@@ -94,8 +97,13 @@ export const quizRouter = createTRPCRouter({
         });
       }
       // Find the closest tag to the guess
-      const mattertags = await ctx.db.query.tags.findMany();
-      let distances = mattertags.map((tag) => ({
+      const currentQuestion = currentQuiz.questions.find(
+        (question) => question.id === currentQuiz.currentQuestion,
+      )!;
+      const mattertags = await ctx.db.query.tags.findMany({
+        where: eq(tags.label, currentQuestion.tagName),
+      });
+      const distances = mattertags.map((tag) => ({
         id: tag.id,
         dist: Math.sqrt(
           (tag.posX - input.position.x) ** 2 +
@@ -112,6 +120,7 @@ export const quizRouter = createTRPCRouter({
           selectedX: input.position.x,
           selectedY: input.position.y,
           selectedZ: input.position.z,
+          minDist: distances[0]!.dist,
           nearestTag: distances[0]!.id,
         })
         .where(eq(quizQuestions.id, currentQuiz.currentQuestion!));
@@ -119,7 +128,7 @@ export const quizRouter = createTRPCRouter({
       const newQuestion = await ctx.db.query.quizQuestions.findFirst({
         where: and(
           eq(quizQuestions.quizId, currentQuiz.id),
-          isNull(quizQuestions.completedAt),
+          eq(quizQuestions.index, currentQuestion.index + 1),
         ),
         columns: {
           id: true,
@@ -133,11 +142,53 @@ export const quizRouter = createTRPCRouter({
           .update(quizzes)
           .set({ completedAt: new Date() })
           .where(eq(quizzes.id, currentQuiz.id));
+        return true;
       } else {
         await ctx.db
           .update(quizzes)
           .set({ currentQuestion: newQuestion.id })
           .where(eq(quizzes.id, currentQuiz.id));
+        return false;
       }
     }),
+  getScores: protectedProcedure.query(async ({ ctx }) => {
+    const currentQuiz = await ctx.db.query.quizzes.findFirst({
+      where: and(
+        eq(quizzes.userId, ctx.session.user.id),
+        isNull(quizzes.completedAt),
+      ),
+    });
+    if (!currentQuiz) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "There is no active quiz",
+      });
+    }
+    const questions = await ctx.db.query.quizQuestions.findMany({
+      where: eq(quizQuestions.quizId, currentQuiz.id),
+      orderBy: [asc(quizQuestions.index)],
+    });
+
+    return questions.map((question) =>
+      question.minDist ? question.minDist < 1 : null,
+    );
+  }),
+  getAllScores: protectedProcedure.query(async ({ ctx }) => {
+    const quizScores = await ctx.db.query.quizzes.findMany({
+      with: {
+        questions: {
+          orderBy: [asc(quizQuestions.index)],
+        },
+      },
+      orderBy: [asc(quizzes.completedAt)],
+    });
+
+    return quizScores.map((quiz) => ({
+      completedAt: quiz.completedAt,
+      questions: quiz.questions.map((question) => ({
+        tagName: question.tagName,
+        correct: question.minDist ? question.minDist < 1 : null,
+      })),
+    }));
+  }),
 });
