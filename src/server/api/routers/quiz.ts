@@ -14,6 +14,18 @@ const validQuizTagLabels = [
 
 export const quizRouter = createTRPCRouter({
   startQuiz: protectedProcedure.mutation(async ({ ctx }) => {
+    // Do nothing if there is an unfinished quiz
+    const currentQuiz = await ctx.db.query.quizzes.findFirst({
+      where: and(
+        eq(quizzes.userId, ctx.session.user.id),
+        isNull(quizzes.completedAt),
+      ),
+    });
+
+    if (currentQuiz) {
+      return;
+    }
+
     // Create a new quiz
     const newQuiz = (
       await ctx.db

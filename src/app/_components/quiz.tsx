@@ -1,6 +1,7 @@
 import type { MpSdk } from "@matterport/sdk";
 import { useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
+import { IoMdInformationCircleOutline } from "react-icons/io";
 import { MpSdkContext } from "~/mp_sdk_context";
 import { api } from "~/trpc/react";
 
@@ -95,7 +96,7 @@ export const Quiz = (props: {
   return (
     <div className="pointer-events-none absolute h-screen w-screen">
       <div className="absolute right-0 h-screen">
-        <div className="pointer-events-auto mr-8 flex w-40 flex-col bg-gray-600/60 py-1 text-slate-300">
+        <div className="pointer-events-auto mr-8 flex w-40 flex-col items-center bg-green-600/60 py-1 text-slate-200">
           <div className="space-around mx-auto flex flex-row">
             {scores.map((score, i) => (
               <div
@@ -105,6 +106,15 @@ export const Quiz = (props: {
             ))}
           </div>
           <p>Find: {currentQuestion.question.tagName}</p>
+          <button
+            onClick={() =>
+              alert(
+                'TODO',
+              )
+            }
+          >
+            <IoMdInformationCircleOutline className="size-10" />
+          </button>
         </div>
       </div>
       <button

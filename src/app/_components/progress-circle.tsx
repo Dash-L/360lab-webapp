@@ -4,7 +4,7 @@ export const ProgressCircle = (props: {
   size: number;
   strokeWidth: number;
   progress: number;
-  className: string;
+  className?: string;
 }) => {
   const radius = props.size / 2 - props.strokeWidth * 2;
   const circumference = 2 * Math.PI * radius;

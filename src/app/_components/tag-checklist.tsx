@@ -7,6 +7,7 @@ import { MpSdkContext } from "~/mp_sdk_context";
 import type { AppRouter } from "~/server/api/root";
 import { api } from "~/trpc/react";
 import { ProgressCircle } from "./progress-circle";
+import { IoMdInformationCircleOutline } from "react-icons/io";
 
 export const TagChecklist = () => {
   const tagQuery = api.matterport.tags.useQuery({
@@ -80,23 +81,33 @@ export const TagChecklist = () => {
   const total = Object.values(tags).length;
 
   return (
-    <div className="absolute right-0 h-screen overflow-hidden hover:overflow-scroll">
-      <div className="mr-8 flex w-40 flex-col bg-gray-600/60 py-1 text-slate-300">
+    <div className="pointer-events-none absolute right-0 mr-8 h-screen overflow-hidden text-slate-200 hover:overflow-scroll">
+      <div className="pointer-events-auto flex w-40 flex-col items-center bg-green-600/60 py-1">
         {tagQuery.isLoading ? (
           <p>Loading...</p>
         ) : (
           <>
             <ProgressCircle
-              className="self-center"
               size={60}
               strokeWidth={5}
-              progress={total !== 0 ? seen / total : 1}
+              progress={total !== 0 ? seen / total : 0}
             />
             <span className="self-center">
               Tags: {seen}/{total}
             </span>
           </>
         )}
+        <button
+          onClick={() =>
+            alert(
+              'Explore the lab space, click on the tags, and read the information within them. Once you feel satisfied that you understand the content and locations of the tags, click "Done"',
+            )
+          }
+        >
+          <IoMdInformationCircleOutline className="size-10" />
+        </button>
+      </div>
+      <div className="pointer-events-auto absolute bottom-0 flex w-40 flex-col bg-green-600/80 py-1">
         <button onClick={uncheckAll}>Clear</button>
         <button
           onClick={() => {
@@ -107,7 +118,7 @@ export const TagChecklist = () => {
           Done
         </button>
         <button
-          className="text-red-300"
+          className="text-red-400"
           onClick={() => router.push("/api/auth/signout")}
         >
           Sign Out
