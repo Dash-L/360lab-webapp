@@ -1,25 +1,38 @@
-import { getServerAuthSession } from "~/server/auth";
-import Link from "next/link";
-import { QuizPage } from "../_components/quiz-main";
+"use client";
 
-const Quiz = async () => {
-  const session = await getServerAuthSession();
+import dynamic from "next/dynamic";
+import { Suspense, useState } from "react";
+import { env } from "~/env";
+import { Quiz } from "~/app/_components/quiz";
 
-  if (session === null) {
-    return <Link href="api/auth/signin">Sign In</Link>;
-  }
+const MpSdkProvider = dynamic(
+  () =>
+    import("~/app/_components/mpsdk-provider").then((mod) => mod.MpSdkProvider),
+  { ssr: false },
+);
+
+const QuizPage = () => {
+  const [iframeElement, setIframeElement] = useState<HTMLIFrameElement | null>(
+    null,
+  );
 
   return (
-    <main>
-      <QuizPage />
-      {/*
-      <div className="flex-row space-x-4 ml-auto mr-10">
-        <span>Logged in as {session.user.name}</span>
-        <Link href="api/auth/signout">Sign Out</Link>
+    <MpSdkProvider iframeElement={iframeElement}>
+      <div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Quiz
+            iframeWidth={iframeElement?.clientWidth}
+            iframeHeight={iframeElement?.clientHeight}
+          />
+        </Suspense>
+        <iframe
+          ref={(el) => setIframeElement(el)}
+          className="h-screen w-screen border-0"
+          src={`https://my.matterport.com/show/?m=${env.NEXT_PUBLIC_MATTERPORT_MODEL_ID}&brand=0&qs=1&views=0&hr=0&tagNav=0&search=0&vr=0&play=1&mt=0`}
+        ></iframe>
       </div>
-    */}
-    </main>
+    </MpSdkProvider>
   );
 };
 
-export default Quiz;
+export default QuizPage;
