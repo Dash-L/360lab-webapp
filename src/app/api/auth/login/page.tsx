@@ -10,8 +10,10 @@ export default function Page({
   const callbackUrl = (searchParams?.callbackUrl as string) ?? "/";
 
   useEffect(() => {
-    signIn("azure-ad", { callbackUrl });
-  }, []);
+    signIn("azure-ad", { callbackUrl }).catch((reason) =>
+      console.log("ERROR:", reason),
+    );
+  });
 
   return <></>;
 }
