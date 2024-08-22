@@ -3,8 +3,6 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { getServerAuthSession } from "~/server/auth";
-import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 
 export const metadata = {
@@ -26,11 +24,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerAuthSession();
-  if (!session) {
-    redirect("api/auth/signin");
-  }
-
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
