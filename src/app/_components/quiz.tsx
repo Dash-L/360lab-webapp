@@ -77,7 +77,7 @@ export const Quiz = (props: {
               { w: iframeWidth, h: iframeHeight },
             );
 
-            setButtonPosition({ top: coords.y - 15, left: coords.x - 20 });
+            setButtonPosition({ top: coords.y - 45, left: coords.x - 35 });
           }
         }, 16);
 
@@ -118,7 +118,7 @@ export const Quiz = (props: {
         </div>
       </div>
       <button
-        className={`${buttonVisible ? "absolute block" : "hidden"} pointer-events-auto rounded bg-white px-1`}
+        className={`${buttonVisible ? "absolute block" : "hidden"} pointer-events-auto rounded bg-white/80 px-1 w-20 h-20`}
         style={{ top: buttonPosition.top, left: buttonPosition.left }}
         onClick={() => {
           if (confirm("Really submit?")) {
