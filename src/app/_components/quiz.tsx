@@ -69,7 +69,7 @@ export const Quiz = (props: {
     if (mpSdk) {
       if (lastIntersection && lastPose && iframeWidth && iframeHeight) {
         const interval = setInterval(() => {
-          if (new Date().getTime() > lastIntersectionTime + 1000) {
+          if (new Date().getTime() > lastIntersectionTime + 750) {
             setButtonVisible(true);
             const coords = mpSdk.Conversion.worldToScreen(
               lastIntersection.position,
@@ -109,7 +109,7 @@ export const Quiz = (props: {
           <button
             onClick={() =>
               alert(
-                'TODO',
+                'Navigate to the referenced object, and then\n\nOn Desktop: Hover over the object until a "Submit" button appears, and click it.\nOn Mobile: Press for long enough that Matterport doesn\'t detect a click, then wait for and press the "Submit" button.\n\n(You must be within three feet of the object to get the question correct)',
               )
             }
           >

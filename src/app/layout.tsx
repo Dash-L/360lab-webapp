@@ -4,14 +4,22 @@ import { GeistSans } from "geist/font/sans";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { getServerAuthSession } from "~/server/auth";
-import { signIn } from "next-auth/react";
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
 
 export const metadata = {
   title: "360Lab WebApp",
   description: "WebApp to interact with 360Lab tours",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
+
+const WindowSizeHandler = dynamic(
+  () =>
+    import("~/app/_components/window-size-handler").then(
+      (mod) => mod.WindowSizeHandler,
+    ),
+  { ssr: false },
+);
 
 export default async function RootLayout({
   children,
@@ -26,6 +34,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
+        <WindowSizeHandler />
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
     </html>
