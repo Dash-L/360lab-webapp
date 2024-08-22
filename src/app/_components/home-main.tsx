@@ -18,7 +18,7 @@ export const Home = () => {
 
   return (
     <MpSdkProvider iframeElement={iframeElement}>
-      <div className="h-[calc(var(--vh,1vh)*100)] w-[calc(var(--vw,1vw)*100)]">
+      <div className="absolute h-[calc(var(--vh,1vh)*100)] w-[calc(var(--vw,1vw)*100)]">
         <TagChecklist />
         <iframe
           ref={(el) => setIframeElement(el)}

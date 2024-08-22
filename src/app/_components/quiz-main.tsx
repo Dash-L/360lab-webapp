@@ -18,7 +18,7 @@ export const QuizMain = () => {
 
   return (
     <MpSdkProvider iframeElement={iframeElement}>
-      <div className="h-[calc(var(--vh,1vh)*100)] w-[calc(var(--vw,1vw)*100)]">
+      <div className="absolute h-[calc(var(--vh,1vh)*100)] w-[calc(var(--vw,1vw)*100)]">
         <Suspense fallback={<div>Loading...</div>}>
           <Quiz
             iframeWidth={iframeElement?.clientWidth}
