@@ -5,6 +5,18 @@ import { IoMdInformationCircleOutline } from "react-icons/io";
 import { MpSdkContext } from "~/mp_sdk_context";
 import { api } from "~/trpc/react";
 
+type Point = {
+  x: number;
+  y: number;
+  z: number;
+};
+
+const dist = (p1: Point, p2: Point) => {
+  return Math.sqrt(
+    (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2,
+  );
+};
+
 export const Quiz = (props: {
   iframeWidth: number | undefined;
   iframeHeight: number | undefined;
@@ -46,8 +58,14 @@ export const Quiz = (props: {
     if (mpSdk) {
       const pointerSubscription = mpSdk.Pointer.intersection.subscribe(
         (intersection: MpSdk.Pointer.Intersection) => {
+          if (
+            !buttonVisible ||
+            lastIntersection &&
+            dist(lastIntersection.position, intersection.position) > 0.05
+          ) {
+            setLastIntersectionTime(new Date().getTime());
+          }
           setLastIntersection(intersection);
-          setLastIntersectionTime(new Date().getTime());
           setButtonVisible(false);
         },
       );
@@ -118,7 +136,7 @@ export const Quiz = (props: {
         </div>
       </div>
       <button
-        className={`${buttonVisible ? "absolute block" : "hidden"} pointer-events-auto rounded bg-white/80 px-1 w-20 h-20`}
+        className={`${buttonVisible ? "absolute block" : "hidden"} pointer-events-auto h-20 w-20 rounded bg-white/80 px-1`}
         style={{ top: buttonPosition.top, left: buttonPosition.left }}
         onClick={() => {
           if (confirm("Really submit?")) {
