@@ -60,13 +60,13 @@ export const Quiz = (props: {
         (intersection: MpSdk.Pointer.Intersection) => {
           if (
             !buttonVisible ||
-            lastIntersection &&
-            dist(lastIntersection.position, intersection.position) > 0.05
+            (lastIntersection &&
+              dist(lastIntersection.position, intersection.position) > 0.035)
           ) {
             setLastIntersectionTime(new Date().getTime());
+            setButtonVisible(false);
           }
           setLastIntersection(intersection);
-          setButtonVisible(false);
         },
       );
 
@@ -81,7 +81,7 @@ export const Quiz = (props: {
         poseSubscription.cancel();
       };
     }
-  }, [mpSdk]);
+  }, [mpSdk, lastIntersection, buttonVisible]);
 
   useEffect(() => {
     if (mpSdk) {
@@ -127,7 +127,7 @@ export const Quiz = (props: {
           <button
             onClick={() =>
               alert(
-                'Navigate to the referenced object, and then\n\nOn Desktop: Hover over the object until a "Submit" button appears, and click it.\nOn Mobile: Press for long enough that Matterport doesn\'t detect a click, then wait for and press the "Submit" button.\n\n(You must be within three feet of the object to get the question correct)',
+                'Navigate to the referenced object, and then\n\nOn Desktop: Hover over the object until a "Submit" button appears, and click it.\n\nOn Mobile: Long press until the "Submit" button appears, then press it.\n\n(You must be within three feet of the object to get the question correct)',
               )
             }
           >
