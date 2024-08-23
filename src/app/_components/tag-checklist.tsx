@@ -81,7 +81,7 @@ export const TagChecklist = () => {
   const total = Object.values(tags).length;
 
   return (
-    <div className="pointer-events-none absolute right-0 mr-8 h-screen overflow-hidden text-slate-200 hover:overflow-scroll">
+    <div className="pointer-events-none absolute right-0 mr-8 h-full overflow-hidden text-slate-200 hover:overflow-scroll">
       <div className="pointer-events-auto flex w-40 flex-col items-center bg-green-600/60 py-1">
         {tagQuery.isLoading ? (
           <p>Loading...</p>
