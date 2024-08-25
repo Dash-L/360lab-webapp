@@ -5,7 +5,9 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { quizQuestions, quizzes, tags } from "~/server/db/schema";
 
 const validQuizTagLabels = [
-  "Sink",
+  "Glassware Sink",
+  "Handwashing Sink",
+  "Telephone",
   "Emergency Shower",
   "Emergency Eyewash",
   "Broken Glass Disposal",
