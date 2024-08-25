@@ -100,7 +100,7 @@ export const TagChecklist = () => {
         <button
           onClick={() =>
             alert(
-              'Explore the lab space, click on the tags, and read the information within them. Once you feel satisfied that you understand the content and locations of the tags, click "Done"',
+              'Explore the lab space, click on the tags, and read the information within them. Once you feel satisfied that you understand the content and locations of the tags, click "Done."\n\n(You are not required to see every tag to take the quiz)',
             )
           }
         >
@@ -108,7 +108,7 @@ export const TagChecklist = () => {
         </button>
       </div>
       <div className="pointer-events-auto absolute bottom-0 flex w-40 flex-col bg-green-600/80 py-1">
-        <button onClick={uncheckAll}>Clear</button>
+        {/* <button onClick={uncheckAll}>Clear</button> */}
         <button
           onClick={() => {
             startQuiz.mutate();
